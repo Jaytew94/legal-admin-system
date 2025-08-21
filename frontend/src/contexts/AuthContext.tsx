@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authService } from '../services/authService';
 
 interface User {
   id: number;
@@ -67,24 +68,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        setUser(data.user);
-        return true;
-      } else {
-        const errorData = await response.json();
-        console.error('Login failed:', errorData.message);
-        return false;
-      }
+      const response = await authService.login(username, password);
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
+      return true;
     } catch (error) {
       console.error('Login error:', error);
       return false;
