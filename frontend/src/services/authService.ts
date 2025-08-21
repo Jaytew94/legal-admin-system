@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://legal-admin-system-mh8q.vercel.app/api';
+const API_BASE_URL = '/api';
 
 export const authService = {
   // 用户登录

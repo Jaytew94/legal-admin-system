@@ -13,9 +13,15 @@
     "setup": "npm run install-all && npm run build-all"
   },
   "keywords": ["legal", "consular", "management", "system"],
-  "author": "Your Name",
+  "author": "Yur Name",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@vercel/node": "^3.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.6"
   }
 }

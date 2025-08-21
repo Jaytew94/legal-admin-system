@@ -39,7 +39,7 @@ const VerificationPage: React.FC = () => {
 
   const fetchRecord = async () => {
     try {
-      const response = await fetch(`https://legal-admin-system-mh8q.vercel.app/api/public/sticker?qr=${qrCode}`);
+      const response = await fetch(`/api/public/sticker?qr=${qrCode}`);
       
       if (response.ok) {
         const data = await response.json();
