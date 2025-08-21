@@ -53,6 +53,7 @@ const RecordsList: React.FC = () => {
   useEffect(() => {
     loadRecords();
     loadStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.current, pagination.pageSize, searchText, statusFilter]);
 
   const loadRecords = async () => {

@@ -34,6 +34,7 @@ const VerificationPage: React.FC = () => {
     }
 
     fetchRecord();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qrCode]);
 
   const fetchRecord = async () => {
