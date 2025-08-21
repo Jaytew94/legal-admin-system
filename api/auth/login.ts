@@ -1,9 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import sqlite3 from 'sqlite3';
-import path from 'path';
-import fs from 'fs';
+
+// 内存中的用户数据（仅用于测试）
+const adminUser = {
+  id: 1,
+  username: 'admin',
+  password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi' // admin123的哈希
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -17,63 +21,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    // 检查数据库文件是否存在
-    const dbPath = path.join(process.cwd(), 'database', 'legalization.db');
-    
-    if (!fs.existsSync(dbPath)) {
-      console.error('Database file not found:', dbPath);
-      return res.status(500).json({ error: 'Database not initialized' });
-    }
+    console.log('Login attempt for username:', username);
 
-    console.log('Database path:', dbPath);
-    console.log('Database exists:', fs.existsSync(dbPath));
-
-    // 连接数据库
-    const db = new sqlite3.Database(dbPath, (err) => {
-      if (err) {
-        console.error('Database connection error:', err);
-        return res.status(500).json({ error: 'Database connection failed' });
-      }
-    });
-
-    // 查询用户
-    const user = await new Promise((resolve, reject) => {
-      db.get(
-        'SELECT * FROM users WHERE username = ?',
-        [username],
-        (err, row) => {
-          if (err) {
-            console.error('Database query error:', err);
-            reject(err);
-          } else {
-            resolve(row);
-          }
-        }
-      );
-    });
-
-    db.close();
-
-    if (!user) {
+    // 检查用户是否存在
+    if (username !== adminUser.username) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // 验证密码
-    const isValidPassword = await bcrypt.compare(password, (user as any).password);
+    const isValidPassword = await bcrypt.compare(password, adminUser.password);
 
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    console.log('Password verified successfully');
+
     // 生成JWT token
     const token = jwt.sign(
-      { userId: (user as any).id, username: (user as any).username },
+      { userId: adminUser.id, username: adminUser.username },
       process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production',
       { expiresIn: '24h' }
     );
 
+    console.log('JWT token generated');
+
     // 返回用户信息（不包含密码）
-    const { password: _, ...userWithoutPassword } = user as any;
+    const { password: _, ...userWithoutPassword } = adminUser;
 
     res.status(200).json({
       token,
