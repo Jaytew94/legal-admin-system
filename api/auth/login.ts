@@ -3,8 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import sqlite3 from 'sqlite3';
 import path from 'path';
-
-const dbPath = path.join(process.cwd(), 'database', 'legalization.db');
+import fs from 'fs';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -18,8 +17,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
+    // 检查数据库文件是否存在
+    const dbPath = path.join(process.cwd(), 'database', 'legalization.db');
+    
+    if (!fs.existsSync(dbPath)) {
+      console.error('Database file not found:', dbPath);
+      return res.status(500).json({ error: 'Database not initialized' });
+    }
+
+    console.log('Database path:', dbPath);
+    console.log('Database exists:', fs.existsSync(dbPath));
+
     // 连接数据库
-    const db = new sqlite3.Database(dbPath);
+    const db = new sqlite3.Database(dbPath, (err) => {
+      if (err) {
+        console.error('Database connection error:', err);
+        return res.status(500).json({ error: 'Database connection failed' });
+      }
+    });
 
     // 查询用户
     const user = await new Promise((resolve, reject) => {
@@ -27,8 +42,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         'SELECT * FROM users WHERE username = ?',
         [username],
         (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
+          if (err) {
+            console.error('Database query error:', err);
+            reject(err);
+          } else {
+            resolve(row);
+          }
         }
       );
     });
@@ -63,6 +82,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
