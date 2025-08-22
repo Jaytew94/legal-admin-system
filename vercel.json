@@ -10,10 +10,6 @@
     {
       "src": "/check/(.*)",
       "dest": "/check/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/check/sticker8691.html"
     }
   ]
 }
