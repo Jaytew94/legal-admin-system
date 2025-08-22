@@ -1,22 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// 内存中的记录数据（仅用于测试）
-let records: any[] = [
-  {
-    id: 1,
-    qr_code: 'zVtgAi18NOlvLivHYMjj',
-    legalization_no: 'SKAKP5V-001',
-    issue_date: '2025-04-14',
-    place_of_issue: 'SKA',
-    legalization_type: 'SEEN AT THE MINISTRY OF FOREIGN AFFAIRS',
-    authorized_officer: 'MISS SAMARIN SIRISAWAT',
-    document_owner: 'MISS UNYANEE KHAOWISET',
-    document_type: 'CERTIFICATE OF BIRTH',
-    status: 'active',
-    created_at: '2025-08-22T06:00:00.000Z',
-    updated_at: '2025-08-22T06:00:00.000Z'
-  }
-];
+// 导入共享的记录数据
+import { records } from '../records/index';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -31,6 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     console.log('Looking for QR code:', qr);
+    console.log('Available records:', records.map(r => r.qr_code));
 
     // 查找记录
     const record = records.find(r => r.qr_code === qr);

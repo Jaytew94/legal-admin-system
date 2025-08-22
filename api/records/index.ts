@@ -1,9 +1,26 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
 
-// 内存中的记录数据（仅用于测试）
-let records: any[] = [];
-let nextId = 1;
+// 内存中的记录数据（与验证页面共享）
+let records: any[] = [
+  {
+    id: 1,
+    qr_code: 'zVtgAi18NOlvLivHYMjj',
+    legalization_no: 'SKAKP5V-001',
+    issue_date: '2025-04-14',
+    place_of_issue: 'SKA',
+    legalization_type: 'SEEN AT THE MINISTRY OF FOREIGN AFFAIRS',
+    authorized_officer: 'MISS SAMARIN SIRISAWAT',
+    document_owner: 'MISS UNYANEE KHAOWISET',
+    document_type: 'CERTIFICATE OF BIRTH',
+    status: 'active',
+    created_by: 1,
+    created_by_name: 'admin',
+    created_at: '2025-08-22T06:00:00.000Z',
+    updated_at: '2025-08-22T06:00:00.000Z'
+  }
+];
+let nextId = 2;
 
 // 生成随机QR码
 function generateQRCode(): string {
@@ -111,7 +128,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         qr_filename: `qr_${newRecord.qr_code}.png`
       }
     });
+  } else if (req.method === 'DELETE') {
+    // 删除记录
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ error: 'IDs array is required' });
+    }
+
+    const initialCount = records.length;
+    records = records.filter(record => !ids.includes(record.id));
+    const deletedCount = initialCount - records.length;
+
+    res.status(200).json({
+      message: 'Records deleted successfully',
+      deletedCount
+    });
   } else {
     res.status(405).json({ error: 'Method not allowed' });
   }
 }
+
+// 导出records数组供其他API使用
+export { records };
