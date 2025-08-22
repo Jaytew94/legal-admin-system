@@ -1,6 +1,7 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
 import fs from 'fs';
+import bcrypt from 'bcryptjs';
 
 // Vercel环境下的数据库配置
 const isVercel = process.env.VERCEL === '1';
@@ -76,7 +77,6 @@ export async function initDatabase(): Promise<void> {
 
         if (row.count === 0) {
           // 创建默认管理员用户 (admin/admin123)
-          const bcrypt = require('bcryptjs');
           const hashedPassword = bcrypt.hashSync('admin123', 10);
           
           database.run(`
