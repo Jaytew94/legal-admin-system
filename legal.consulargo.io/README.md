@@ -193,12 +193,52 @@ npm run build:github
 - **管理系统**: `https://您的用户名.github.io/仓库名`
 - **验证页面**: `https://您的用户名.github.io/仓库名/check/sticker.html`
 
-### 🌐 Vercel 部署（备选方案）
+### 🌐 Vercel 全栈部署（推荐）
+
+#### 前端 + 后端一起部署到Vercel
+
+**优势**：
+- ✅ 前后端统一管理
+- ✅ 无服务器架构，按需付费
+- ✅ 全球CDN加速
+- ✅ 自动HTTPS和域名管理
+
+**快速部署**：
+
+1. **部署后端API**：
+```bash
+# 安装Vercel CLI
+npm i -g vercel
+
+# 部署后端
+vercel --config vercel-backend.json --prod
+
+# 设置环境变量
+vercel env add JWT_SECRET production
+```
+
+2. **部署前端**：
+```bash
+cd legal.consulargo.io/frontend
+vercel --prod
+
+# 设置API地址
+vercel env add REACT_APP_API_URL production
+# 输入: https://your-backend.vercel.app/api
+```
+
+3. **访问应用**：
+- **后端API**: `https://your-backend.vercel.app/api`
+- **前端应用**: `https://your-frontend.vercel.app`
+
+📖 **详细步骤请查看** [`VERCEL_DEPLOY.md`](VERCEL_DEPLOY.md)
+
+#### 仅前端部署到Vercel + GitHub Pages
 
 1. **连接GitHub仓库**到Vercel
 2. **配置构建设置**：
-   - Build Command: `cd frontend && npm run build`
-   - Output Directory: `frontend/build`
+   - Build Command: `npm run build`
+   - Output Directory: `build`
 3. **设置环境变量**：
    - `REACT_APP_API_URL`: 后端API地址
 
