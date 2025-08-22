@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, Descriptions, Spin, Alert, Typography } from 'antd';
 import { QrcodeOutlined } from '@ant-design/icons';
@@ -26,17 +26,7 @@ const VerificationPage: React.FC = () => {
 
   const qrCode = searchParams.get('qr');
 
-  useEffect(() => {
-    if (!qrCode) {
-      setError('缺少QR码参数');
-      setLoading(false);
-      return;
-    }
-
-    fetchRecord();
-  }, [qrCode]);
-
-  const fetchRecord = async () => {
+  const fetchRecord = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/public/sticker?qr=${qrCode}`);
       
@@ -52,7 +42,17 @@ const VerificationPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [qrCode]);
+
+  useEffect(() => {
+    if (!qrCode) {
+      setError('缺少QR码参数');
+      setLoading(false);
+      return;
+    }
+
+    fetchRecord();
+  }, [qrCode, fetchRecord]);
 
   if (loading) {
     return (

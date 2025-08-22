@@ -1,6 +1,6 @@
 // 环境配置管理
 const isDevelopment = process.env.NODE_ENV === 'development';
-const isProduction = process.env.NODE_ENV === 'production';
+// const isProduction = process.env.NODE_ENV === 'production';
 
 // 检测部署环境
 const isGitHubPages = window.location.hostname.includes('github.io');
@@ -26,8 +26,8 @@ const getApiUrl = () => {
   }
   
   // GitHub Pages 或其他环境
-  // 这里需要替换为您的Vercel后端URL
-  return 'https://legal-admin-system-api.vercel.app/api';
+  // Railway 后端API
+  return 'https://legal-admin-system-production.up.railway.app/api';
 };
 
 // 默认配置

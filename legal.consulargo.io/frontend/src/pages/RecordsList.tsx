@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Table, 
   Button, 
@@ -50,12 +50,7 @@ const RecordsList: React.FC = () => {
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadRecords();
-    loadStats();
-  }, [pagination.current, pagination.pageSize, searchText, statusFilter]);
-
-  const loadRecords = async () => {
+  const loadRecords = useCallback(async () => {
     setLoading(true);
     try {
       const response = await recordService.getRecords({
@@ -75,9 +70,9 @@ const RecordsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.current, pagination.pageSize, searchText, statusFilter]);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       // 这里可以调用API获取统计数据，暂时使用模拟数据
       const total = records.length;
@@ -87,7 +82,12 @@ const RecordsList: React.FC = () => {
     } catch (error) {
       console.error('加载统计数据失败:', error);
     }
-  };
+  }, [records]);
+
+  useEffect(() => {
+    loadRecords();
+    loadStats();
+  }, [loadRecords, loadStats]);
 
   const handleDelete = async (id: number) => {
     try {

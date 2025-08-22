@@ -1,40 +1,19 @@
 {
   "version": 2,
-  "functions": {
-    "api/hello.ts": {
-      "runtime": "@vercel/node"
-    },
-    "api/auth/login.ts": {
-      "runtime": "@vercel/node"
-    }
-  },
-  "routes": [
+  "builds": [
     {
-      "src": "/api/hello",
-      "dest": "/api/hello.ts"
-    },
-    {
-      "src": "/api/auth/login",
-      "dest": "/api/auth/login.ts"
+      "src": "legal.consulargo.io/frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "buildCommand": "npm run build",
+        "outputDirectory": "build"
+      }
     }
   ],
-  "headers": [
+  "rewrites": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
-      ]
+      "source": "/(.*)",
+      "destination": "/legal.consulargo.io/frontend/build/index.html"
     }
   ]
 }

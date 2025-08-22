@@ -106,6 +106,68 @@ app.get('/api/qrcode/info/:qrCode', (req, res) => {
   });
 });
 
+// 更新记录
+app.put('/api/records/:id', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  const { id } = req.params;
+  const updates = req.body;
+  
+  try {
+    // 构建更新SQL
+    const fields = Object.keys(updates).filter(key => 
+      ['legalization_no', 'applicant_name', 'document_type', 'issue_date', 'status'].includes(key)
+    );
+    
+    if (fields.length === 0) {
+      return res.status(400).json({ error: '没有有效的更新字段' });
+    }
+    
+    const setClause = fields.map(field => `${field} = ?`).join(', ');
+    const values = fields.map(field => updates[field]);
+    values.push(id);
+    
+    const stmt = database.prepare(`UPDATE records SET ${setClause}, updated_at = datetime('now') WHERE id = ?`);
+    const result = stmt.run(...values);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: '记录未找到' });
+    }
+    
+    res.json({ message: '记录更新成功' });
+  } catch (error) {
+    console.error('更新记录失败:', error);
+    res.status(500).json({ error: '更新记录失败' });
+  }
+});
+
+// 删除记录
+app.delete('/api/records/:id', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  const { id } = req.params;
+  
+  try {
+    const stmt = database.prepare('DELETE FROM records WHERE id = ?');
+    const result = stmt.run(id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: '记录未找到' });
+    }
+    
+    res.json({ message: '记录删除成功' });
+  } catch (error) {
+    console.error('删除记录失败:', error);
+    res.status(500).json({ error: '删除记录失败' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 API服务器启动成功！`);
   console.log(`📡 端口: ${PORT}`);
