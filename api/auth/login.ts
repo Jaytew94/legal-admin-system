@@ -1,12 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 // 内存中的用户数据（仅用于测试）
 const adminUser = {
   id: 1,
   username: 'admin',
-  password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi' // admin123的哈希
+  password: 'admin123' // 直接使用明文密码（仅用于测试）
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -28,10 +27,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // 验证密码
-    const isValidPassword = await bcrypt.compare(password, adminUser.password);
-
-    if (!isValidPassword) {
+    // 验证密码（直接比较）
+    if (password !== adminUser.password) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
