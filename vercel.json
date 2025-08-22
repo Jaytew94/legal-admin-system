@@ -1,27 +1,21 @@
 {
   "version": 2,
-
   "functions": {
-    "api/index.ts": {
+    "api/hello.ts": {
+      "runtime": "@vercel/node"
+    },
+    "api/auth/login.ts": {
       "runtime": "@vercel/node"
     }
   },
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.ts"
+      "src": "/api/hello",
+      "dest": "/api/hello.ts"
     },
     {
-      "src": "/(.*)",
-      "dest": "/api/index.ts"
+      "src": "/api/auth/login",
+      "dest": "/api/auth/login.ts"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
-    }
-  }
+  ]
 }
