@@ -20,16 +20,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    console.log('Login attempt for username:', username);
+    console.log('=== LOGIN ATTEMPT ===');
+    console.log('Username:', username);
+    console.log('Password:', password);
+    console.log('Expected username:', adminUser.username);
+    console.log('Expected password:', adminUser.password);
 
     // 检查用户是否存在
     if (username !== adminUser.username) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      console.log('Username mismatch');
+      return res.status(401).json({ error: 'Invalid credentials - username' });
     }
 
     // 验证密码（直接比较）
     if (password !== adminUser.password) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      console.log('Password mismatch');
+      return res.status(401).json({ error: 'Invalid credentials - password' });
     }
 
     console.log('Password verified successfully');
@@ -48,7 +54,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(200).json({
       token,
-      user: userWithoutPassword
+      user: userWithoutPassword,
+      message: 'Login successful!'
     });
 
   } catch (error) {
