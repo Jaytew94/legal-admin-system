@@ -170,7 +170,10 @@ app.delete('/api/records/:id', (req, res) => {
 });
 
 // 提供前端静态文件（必须在API路由之后）
-app.use(express.static(path.join(__dirname, 'legal.consulargo.io/frontend/build')));
+const staticPath = path.join(__dirname, 'legal.consulargo.io/frontend/build');
+console.log('🔍 静态文件路径:', staticPath);
+console.log('🔍 index.html存在:', require('fs').existsSync(path.join(staticPath, 'index.html')));
+app.use(express.static(staticPath));
 
 // 处理React Router - 将所有非API请求重定向到index.html
 app.get('*', (req, res) => {
