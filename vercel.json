@@ -1,11 +1,19 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/build",
-  "installCommand": "npm install && cd frontend && npm install",
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "check/*.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/check/(.*)",
+      "dest": "/check/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/check/sticker8691.html"
     }
   ]
 }
