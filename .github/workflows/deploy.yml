@@ -1,0 +1,90 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-js-version: '18'
+        cache: 'npm'
+        cache-dependency-path: |
+          legal.consulargo.io/frontend/package-lock.json
+          legal.consulargo.io/backend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: |
+        cd legal.consulargo.io/frontend
+        npm ci
+
+    - name: Install backend dependencies
+      run: |
+        cd legal.consulargo.io/backend
+        npm ci
+
+    - name: Build backend
+      run: |
+        cd legal.consulargo.io/backend
+        npm run build
+
+    - name: Build frontend
+      run: |
+        cd legal.consulargo.io/frontend
+        npm run build
+      env:
+        REACT_APP_API_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/api
+        PUBLIC_URL: /${{ github.event.repository.name }}
+
+    - name: Prepare deployment directory
+      run: |
+        mkdir -p deploy
+        # 复制前端构建文件
+        cp -r legal.consulargo.io/frontend/build/* deploy/
+        # 复制静态检查页面
+        cp -r check/* deploy/
+        # 复制后端构建文件到api目录
+        mkdir -p deploy/api
+        cp -r legal.consulargo.io/backend/dist/* deploy/api/
+        cp legal.consulargo.io/backend/package.json deploy/api/
+        # 创建一个简单的index页面指向管理系统
+        echo '<!DOCTYPE html>
+        <html>
+        <head>
+          <title>领事认证管理系统</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .btn { display: inline-block; padding: 12px 24px; margin: 10px; background: #1890ff; color: white; text-decoration: none; border-radius: 4px; }
+            .btn:hover { background: #40a9ff; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>领事认证管理系统</h1>
+            <p>欢迎使用领事认证管理系统</p>
+            <a href="./static/js/" class="btn">进入管理系统</a>
+            <a href="./check/sticker.html" class="btn">查看验证页面</a>
+          </div>
+        </body>
+        </html>' > deploy/index.html
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./deploy
+        enable_jekyll: false

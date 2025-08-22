@@ -171,17 +171,52 @@ npm start
 
 ## 部署说明
 
-### 生产环境部署
+### 🚀 GitHub Pages 部署（推荐）
+
+#### 自动部署
+1. **Fork 或克隆项目到您的GitHub仓库**
+2. **启用 GitHub Pages**：
+   - 进入仓库设置 → Pages
+   - Source 选择 "GitHub Actions"
+3. **推送代码到 main 分支**，GitHub Actions 会自动构建和部署
+
+#### 手动部署
+```bash
+# 构建前端（适用于GitHub Pages）
+cd frontend
+npm run build:github
+
+# 部署文件会在 build/ 目录中
+```
+
+#### 访问地址
+- **管理系统**: `https://您的用户名.github.io/仓库名`
+- **验证页面**: `https://您的用户名.github.io/仓库名/check/sticker.html`
+
+### 🌐 Vercel 部署（备选方案）
+
+1. **连接GitHub仓库**到Vercel
+2. **配置构建设置**：
+   - Build Command: `cd frontend && npm run build`
+   - Output Directory: `frontend/build`
+3. **设置环境变量**：
+   - `REACT_APP_API_URL`: 后端API地址
+
+### 🖥️ 传统服务器部署
+
+#### 生产环境部署
 1. 修改环境变量配置
 2. 构建前端应用：`npm run build`
 3. 启动后端服务：`npm start`
 4. 配置反向代理（如Nginx）
 
-### 环境变量
-- `PORT`: 服务端口（默认3001）
+#### 环境变量
+- `PORT`: 服务端口（默认3000）
 - `JWT_SECRET`: JWT密钥
 - `NODE_ENV`: 环境模式
 - `DATABASE_PATH`: 数据库文件路径
+- `BASE_URL`: 应用基础URL
+- `CORS_ORIGIN`: 允许的跨域源
 
 ## 注意事项
 
@@ -203,6 +238,61 @@ npm start
 - 后端日志在控制台输出
 - 前端错误在浏览器控制台查看
 
+## 🔧 GitHub 部署详细步骤
+
+### 1. 准备GitHub仓库
+```bash
+# 如果还没有推送到GitHub
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/您的用户名/legal-admin-system.git
+git push -u origin main
+```
+
+### 2. 启用GitHub Pages
+1. 进入GitHub仓库页面
+2. 点击 **Settings** 标签页
+3. 在左侧菜单中找到 **Pages**
+4. 在 **Source** 下选择 **GitHub Actions**
+
+### 3. 配置自动部署
+- GitHub Actions工作流已配置在 `.github/workflows/static-deploy.yml`
+- 每次推送到main分支都会自动触发部署
+- 构建完成后可在 `https://您的用户名.github.io/仓库名` 访问
+
+### 4. 后端API部署（可选）
+由于GitHub Pages只支持静态文件，后端需要单独部署：
+
+#### 选项A：Heroku/Railway/Render 部署后端
+```bash
+# 进入backend目录
+cd backend
+
+# 如果使用Heroku
+heroku create your-app-name
+git subtree push --prefix backend heroku main
+```
+
+#### 选项B：无服务器函数（Vercel/Netlify Functions）
+可以将API转换为无服务器函数部署
+
+### 5. 更新前端API配置
+在 `frontend/src/config/index.ts` 中更新 `apiUrl`：
+```typescript
+apiUrl: 'https://your-backend-api.com/api'
+```
+
+## 🎯 快速体验
+
+想要快速体验系统功能？
+
+1. **Fork 这个仓库**
+2. **启用 GitHub Pages** (设置 → Pages → GitHub Actions)
+3. **等待自动部署完成** (约2-3分钟)
+4. **访问您的部署链接**
+
 ## 更新日志
 
 ### v1.0.0
@@ -210,3 +300,4 @@ npm start
 - 完整的后台管理系统
 - 动态展示页面
 - 二维码生成和下载功能
+- GitHub Pages 自动部署支持

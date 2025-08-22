@@ -1,0 +1,170 @@
+name: Deploy Static Site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: legal.consulargo.io/frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: |
+        cd legal.consulargo.io/frontend
+        npm ci
+
+    - name: Build frontend for GitHub Pages
+      run: |
+        cd legal.consulargo.io/frontend
+        npm run build
+      env:
+        PUBLIC_URL: /${{ github.event.repository.name }}
+        REACT_APP_API_URL: https://your-backend-api.com/api
+
+    - name: Prepare GitHub Pages content
+      run: |
+        mkdir -p pages-deploy
+        
+        # 复制前端构建文件
+        cp -r legal.consulargo.io/frontend/build/* pages-deploy/
+        
+        # 复制静态检查页面
+        mkdir -p pages-deploy/check
+        cp check/*.html pages-deploy/check/
+        
+        # 创建主页面
+        cat > pages-deploy/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>领事认证管理系统</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .container {
+              background: white;
+              padding: 3rem;
+              border-radius: 10px;
+              box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+              text-align: center;
+              max-width: 500px;
+              width: 90%;
+            }
+            h1 { 
+              color: #333; 
+              margin-bottom: 1rem; 
+              font-size: 2rem;
+            }
+            p { 
+              color: #666; 
+              margin-bottom: 2rem; 
+              line-height: 1.6;
+            }
+            .btn {
+              display: inline-block;
+              padding: 12px 30px;
+              margin: 0.5rem;
+              background: #1890ff;
+              color: white;
+              text-decoration: none;
+              border-radius: 6px;
+              transition: all 0.3s ease;
+              font-weight: 500;
+            }
+            .btn:hover {
+              background: #40a9ff;
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(24, 144, 255, 0.3);
+            }
+            .btn.secondary {
+              background: #52c41a;
+            }
+            .btn.secondary:hover {
+              background: #73d13d;
+              box-shadow: 0 8px 20px rgba(82, 196, 26, 0.3);
+            }
+            .features {
+              margin-top: 2rem;
+              text-align: left;
+            }
+            .feature {
+              margin: 0.5rem 0;
+              color: #666;
+            }
+            .feature::before {
+              content: "✓";
+              color: #52c41a;
+              font-weight: bold;
+              margin-right: 0.5rem;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>🏛️ 领事认证管理系统</h1>
+            <p>完整的领事认证管理解决方案，包含后台管理和动态验证功能</p>
+            
+            <div>
+              <a href="./static/js/" class="btn">📊 管理系统</a>
+              <a href="./check/sticker.html" class="btn secondary">🔍 验证页面</a>
+            </div>
+            
+            <div class="features">
+              <div class="feature">用户登录认证</div>
+              <div class="feature">记录管理（增删改查）</div>
+              <div class="feature">二维码自动生成</div>
+              <div class="feature">动态验证展示</div>
+              <div class="feature">响应式设计</div>
+            </div>
+          </div>
+        </body>
+        </html>
+        EOF
+        
+        # 创建404页面
+        cp pages-deploy/index.html pages-deploy/404.html
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './pages-deploy'
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

@@ -2,8 +2,34 @@
   "version": 2,
   "builds": [
     {
-      "src": "check/*.html",
-      "use": "@vercel/static"
+      "src": "legal.consulargo.io/frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/check/(.*)",
+      "dest": "/check/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/legal.consulargo.io/frontend/build/$1"
+    }
+  ],
+  "functions": {
+    "legal.consulargo.io/backend/dist/app.js": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "buildCommand": "cd legal.consulargo.io/frontend && npm install && npm run build",
+  "outputDirectory": "legal.consulargo.io/frontend/build",
+  "installCommand": "npm install",
+  "framework": "create-react-app"
 }
