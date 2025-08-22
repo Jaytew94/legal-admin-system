@@ -43,7 +43,7 @@ const VerificationPage: React.FC = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setRecord(data);
+        setRecord(data.record);
       } else {
         setError('记录不存在或已失效');
       }

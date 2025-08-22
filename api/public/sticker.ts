@@ -47,12 +47,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         id: record.id,
         qr_code: record.qr_code,
         legalization_no: record.legalization_no,
-        issue_date: record.issue_date,
+        date_of_issue: record.issue_date,
         place_of_issue: record.place_of_issue,
-        legalization_type: record.legalization_type,
+        type_of_legalization: record.legalization_type,
         authorized_officer: record.authorized_officer,
         document_owner: record.document_owner,
-        document_type: record.document_type,
+        type_of_document: record.document_type,
         status: record.status,
         created_at: record.created_at
       }
