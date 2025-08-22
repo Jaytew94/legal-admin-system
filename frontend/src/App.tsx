@@ -30,6 +30,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/sticker" element={<VerificationPage />} />
+            <Route path="/check/sticker" element={<VerificationPage />} />
             <Route
               path="/dashboard"
               element={
