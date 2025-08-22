@@ -8,6 +8,7 @@ import Settings from './pages/Settings';
 import AddRecord from './pages/AddRecord';
 import VerificationPage from './pages/VerificationPage';
 import MainLayout from './components/Layout/MainLayout';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import './App.css';
 
 // 受保护的路由组件
@@ -71,6 +72,7 @@ function App() {
             />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Routes>
+          <SpeedInsights />
         </div>
       </Router>
     </AuthProvider>
