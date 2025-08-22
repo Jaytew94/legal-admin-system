@@ -1,8 +1,32 @@
 import axios from 'axios';
+import { config } from '../config';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = config.apiUrl;
 
 export const authService = {
+  async login(username: string, password: string): Promise<{ token: string; user: any }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '登录失败');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  },
+
   async changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
     try {
       const token = localStorage.getItem('token');
@@ -45,5 +69,11 @@ export const authService = {
       console.error('Get current user error:', error);
       throw error;
     }
+  },
+
+  async logout(): Promise<void> {
+    // 清除本地存储的token和用户信息
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   },
 };
