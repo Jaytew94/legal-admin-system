@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -166,6 +167,20 @@ app.delete('/api/records/:id', (req, res) => {
     console.error('删除记录失败:', error);
     res.status(500).json({ error: '删除记录失败' });
   }
+});
+
+// 提供前端静态文件（必须在API路由之后）
+app.use(express.static(path.join(__dirname, 'legal.consulargo.io/frontend/build')));
+
+// 处理React Router - 将所有非API请求重定向到index.html
+app.get('*', (req, res) => {
+  // 如果是API请求，返回404
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API端点未找到' });
+  }
+  
+  // 否则返回React应用
+  res.sendFile(path.join(__dirname, 'legal.consulargo.io/frontend/build', 'index.html'));
 });
 
 app.listen(PORT, () => {

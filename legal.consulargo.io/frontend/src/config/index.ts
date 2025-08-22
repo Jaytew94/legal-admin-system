@@ -5,6 +5,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 // 检测部署环境
 const isGitHubPages = window.location.hostname.includes('github.io');
 const isVercelApp = window.location.hostname.includes('vercel.app');
+const isRailwayApp = window.location.hostname.includes('railway.app') || window.location.hostname.includes('up.railway.app');
 const isLocalhost = window.location.hostname === 'localhost';
 
 // API URL 配置
@@ -17,6 +18,11 @@ const getApiUrl = () => {
   // 如果设置了环境变量，优先使用
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
+  }
+  
+  // Railway 全栈部署环境 - 前后端在同一服务器
+  if (isRailwayApp) {
+    return window.location.origin + '/api';
   }
   
   // Vercel 部署环境
