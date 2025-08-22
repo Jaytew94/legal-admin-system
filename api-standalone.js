@@ -118,27 +118,30 @@ app.put('/api/records/:id', (req, res) => {
   const updates = req.body;
   
   try {
-    // 构建更新SQL
-    const fields = Object.keys(updates).filter(key => 
-      ['legalization_no', 'applicant_name', 'document_type', 'issue_date', 'status'].includes(key)
-    );
+    // 验证有效字段
+    const validFields = ['legalization_no', 'applicant_name', 'document_type', 'issue_date', 'status'];
+    const updateFields = Object.keys(updates).filter(key => validFields.includes(key));
     
-    if (fields.length === 0) {
+    if (updateFields.length === 0) {
       return res.status(400).json({ error: '没有有效的更新字段' });
     }
     
-    const setClause = fields.map(field => `${field} = ?`).join(', ');
-    const values = fields.map(field => updates[field]);
-    values.push(id);
-    
-    const stmt = database.prepare(`UPDATE records SET ${setClause}, updated_at = datetime('now') WHERE id = ?`);
-    const result = stmt.run(...values);
-    
-    if (result.changes === 0) {
+    // 查找记录
+    const recordIndex = records.findIndex(r => r.id === parseInt(id));
+    if (recordIndex === -1) {
       return res.status(404).json({ error: '记录未找到' });
     }
     
-    res.json({ message: '记录更新成功' });
+    // 更新记录
+    updateFields.forEach(field => {
+      records[recordIndex][field] = updates[field];
+    });
+    records[recordIndex].updated_at = new Date().toISOString();
+    
+    res.json({ 
+      message: '记录更新成功',
+      record: records[recordIndex]
+    });
   } catch (error) {
     console.error('更新记录失败:', error);
     res.status(500).json({ error: '更新记录失败' });
@@ -155,14 +158,19 @@ app.delete('/api/records/:id', (req, res) => {
   const { id } = req.params;
   
   try {
-    const stmt = database.prepare('DELETE FROM records WHERE id = ?');
-    const result = stmt.run(id);
-    
-    if (result.changes === 0) {
+    // 查找记录
+    const recordIndex = records.findIndex(r => r.id === parseInt(id));
+    if (recordIndex === -1) {
       return res.status(404).json({ error: '记录未找到' });
     }
     
-    res.json({ message: '记录删除成功' });
+    // 删除记录
+    const deletedRecord = records.splice(recordIndex, 1)[0];
+    
+    res.json({ 
+      message: '记录删除成功',
+      deletedRecord: deletedRecord
+    });
   } catch (error) {
     console.error('删除记录失败:', error);
     res.status(500).json({ error: '删除记录失败' });
