@@ -61,6 +61,10 @@ function App() {
               }
             />
             <Route
+              path="/records/add"
+              element={<Navigate to="/records/new" replace />}
+            />
+            <Route
               path="/settings"
               element={
                 <ProtectedRoute>
