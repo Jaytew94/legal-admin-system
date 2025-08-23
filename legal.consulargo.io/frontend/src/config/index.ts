@@ -20,9 +20,19 @@ const getApiUrl = () => {
     return process.env.REACT_APP_API_URL;
   }
   
+  // 调试信息
+  console.log('🔍 环境检测:', {
+    hostname: window.location.hostname,
+    isRailwayApp,
+    isVercelApp,
+    origin: window.location.origin
+  });
+  
   // Railway 全栈部署环境 - 前后端在同一服务器
   if (isRailwayApp) {
-    return window.location.origin + '/api';
+    const apiUrl = window.location.origin + '/api';
+    console.log('✅ Railway API URL:', apiUrl);
+    return apiUrl;
   }
   
   // Vercel 部署环境
@@ -31,9 +41,10 @@ const getApiUrl = () => {
     return window.location.origin + '/api';
   }
   
-  // GitHub Pages 或其他环境
-  // Railway 后端API
-  return 'https://legal-admin-system-production.up.railway.app/api';
+  // GitHub Pages 或其他环境 - 强制使用相对路径
+  // 在Railway环境下，直接使用相对路径
+  console.log('🔄 使用相对API路径:', window.location.origin + '/api');
+  return window.location.origin + '/api';
 };
 
 // 默认配置
