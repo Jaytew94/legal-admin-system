@@ -302,17 +302,15 @@ const checkPath = path.join(__dirname, 'check');
 console.log('🔍 check目录路径:', checkPath);
 console.log('🔍 sticker.html存在:', require('fs').existsSync(path.join(checkPath, 'sticker.html')));
 
-// 处理无扩展名的静态页面路由
+// 处理无扩展名的静态页面路由（直接提供内容，不重定向）
 app.get('/check/sticker', (req, res) => {
-  const query = req.url.includes('?') ? req.url.split('?')[1] : '';
-  const redirectUrl = query ? `/check/sticker.html?${query}` : '/check/sticker.html';
-  res.redirect(redirectUrl);
+  const filePath = path.join(__dirname, 'check', 'sticker.html');
+  res.sendFile(filePath);
 });
 
 app.get('/check/transparent', (req, res) => {
-  const query = req.url.includes('?') ? req.url.split('?')[1] : '';
-  const redirectUrl = query ? `/check/transparent.html?${query}` : '/check/transparent.html';
-  res.redirect(redirectUrl);
+  const filePath = path.join(__dirname, 'check', 'transparent.html');
+  res.sendFile(filePath);
 });
 
 app.use('/check', express.static(checkPath));
