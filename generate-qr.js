@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 要生成的二维码列表
-const qrCodes = ['kktftufnoxm'];
+const qrCodes = ['A1B2C3D4E5F6G7H8I9J0', 'kktftufnoxm'];
 
 // 确保目录存在
 const uploadsDir = path.join(__dirname, 'legal.consulargo.io/backend/uploads/qrcodes');

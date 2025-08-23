@@ -7,6 +7,16 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 生成20位随机二维码（包含大小写字母和数字）
+function generateRandomQRCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 20; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 // 中间件
 app.use(cors());
 app.use(express.json());
@@ -25,7 +35,7 @@ const users = [
 let records = [
   {
     id: 1,
-    qr_code: 'kktftufnoxm',
+    qr_code: 'A1B2C3D4E5F6G7H8I9J0',
     legalization_no: '1',
     issue_date: '2025-08-23',
     place_of_issue: 'SKA',
@@ -89,7 +99,7 @@ app.get('/api/records', (req, res) => {
 app.post('/api/records', (req, res) => {
   const record = {
     id: recordId++,
-    qr_code: Math.random().toString(36).substr(2, 20),
+    qr_code: generateRandomQRCode(),
     ...req.body,
     status: 'active',
     created_at: new Date().toISOString(),
