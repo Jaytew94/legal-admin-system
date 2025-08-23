@@ -181,6 +181,20 @@ app.delete('/api/records/:id', (req, res) => {
 const checkPath = path.join(__dirname, 'check');
 console.log('🔍 check目录路径:', checkPath);
 console.log('🔍 sticker.html存在:', require('fs').existsSync(path.join(checkPath, 'sticker.html')));
+
+// 处理无扩展名的静态页面路由
+app.get('/check/sticker', (req, res) => {
+  const query = req.url.includes('?') ? req.url.split('?')[1] : '';
+  const redirectUrl = query ? `/check/sticker.html?${query}` : '/check/sticker.html';
+  res.redirect(redirectUrl);
+});
+
+app.get('/check/transparent', (req, res) => {
+  const query = req.url.includes('?') ? req.url.split('?')[1] : '';
+  const redirectUrl = query ? `/check/transparent.html?${query}` : '/check/transparent.html';
+  res.redirect(redirectUrl);
+});
+
 app.use('/check', express.static(checkPath));
 
 // 提供前端静态文件（必须在API路由之后）

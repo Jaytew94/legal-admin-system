@@ -252,7 +252,7 @@ const RecordsList: React.FC = () => {
               type="text"
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => window.open(`/check/sticker.html?qr=${record.qr_code}`)}
+              onClick={() => window.open(`/check/sticker?qr=${record.qr_code}`)}
               style={{ color: '#722ed1' }}
             />
           </Tooltip>
