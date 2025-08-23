@@ -94,6 +94,85 @@ app.post('/api/auth/login', (req, res) => {
   });
 });
 
+// 获取当前用户信息
+app.get('/api/auth/me', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  try {
+    // 解析简单token
+    const token = authHeader.split(' ')[1];
+    const decoded = Buffer.from(token, 'base64').toString();
+    const userId = parseInt(decoded.split(':')[0]);
+    
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      return res.status(401).json({ error: '用户不存在' });
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(401).json({ error: '无效的token' });
+  }
+});
+
+// 修改密码接口
+app.post('/api/auth/change-password', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  const { oldPassword, newPassword } = req.body;
+  
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ error: '旧密码和新密码不能为空' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: '新密码长度不能少于6位' });
+  }
+
+  try {
+    // 解析token获取用户ID
+    const token = authHeader.split(' ')[1];
+    const decoded = Buffer.from(token, 'base64').toString();
+    const userId = parseInt(decoded.split(':')[0]);
+    
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+      return res.status(401).json({ error: '用户不存在' });
+    }
+
+    const user = users[userIndex];
+    
+    // 验证旧密码
+    if (!bcrypt.compareSync(oldPassword, user.password)) {
+      return res.status(400).json({ error: '旧密码不正确' });
+    }
+
+    // 更新密码
+    users[userIndex].password = bcrypt.hashSync(newPassword, 10);
+    
+    console.log(`✅ 用户 ${user.username} 密码修改成功`);
+    
+    res.json({
+      message: '密码修改成功'
+    });
+  } catch (error) {
+    console.error('修改密码失败:', error);
+    res.status(500).json({ error: '修改密码失败' });
+  }
+});
+
 // 获取记录列表
 app.get('/api/records', (req, res) => {
   res.json({
