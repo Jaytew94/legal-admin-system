@@ -50,7 +50,7 @@ const Sidebar: React.FC = () => {
       }}
     >
       <div style={{ padding: '16px', textAlign: 'center', borderBottom: '1px solid #f0f0f0' }}>
-        <h3 style={{ margin: 0, color: '#1890ff' }}>法律认证系统</h3>
+        <h3 style={{ margin: 0, color: '#1890ff' }}>SSSSS</h3>
       </div>
       <Menu
         mode="inline"

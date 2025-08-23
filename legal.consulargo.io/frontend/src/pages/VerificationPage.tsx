@@ -116,7 +116,7 @@ const VerificationPage: React.FC = () => {
       <Card>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <QrcodeOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
-          <Title level={2} style={{ margin: 0 }}>法律认证记录验证</Title>
+          <Title level={2} style={{ margin: 0 }}>SSSSS 记录验证</Title>
           <p style={{ color: '#666', margin: '8px 0 0 0' }}>
             此记录已通过官方验证
           </p>

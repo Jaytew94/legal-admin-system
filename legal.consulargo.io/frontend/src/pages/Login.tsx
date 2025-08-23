@@ -35,7 +35,7 @@ const Login: React.FC = () => {
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <div style={{ textAlign: 'center' }}>
             <Title level={2} style={{ margin: 0, color: '#1890ff' }}>
-              领事认证管理系统
+              SSSSS
             </Title>
             <p style={{ color: '#666', margin: '8px 0 0 0' }}>
               请登录您的账户

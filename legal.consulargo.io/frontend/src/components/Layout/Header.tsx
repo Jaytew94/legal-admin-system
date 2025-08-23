@@ -36,7 +36,7 @@ const Header: React.FC = () => {
     }}>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <h2 style={{ margin: 0, color: '#1890ff' }}>
-          领事认证管理系统
+          SSSSS
         </h2>
       </div>
       
