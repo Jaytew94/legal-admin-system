@@ -197,6 +197,12 @@ app.get('/check/transparent', (req, res) => {
 
 app.use('/check', express.static(checkPath));
 
+// 提供二维码图片文件
+const qrcodesPath = path.join(__dirname, 'legal.consulargo.io/backend/uploads/qrcodes');
+console.log('🔍 二维码目录路径:', qrcodesPath);
+console.log('🔍 二维码目录存在:', require('fs').existsSync(qrcodesPath));
+app.use('/uploads/qrcodes', express.static(qrcodesPath));
+
 // 提供前端静态文件（必须在API路由之后）
 const staticPath = path.join(__dirname, 'legal.consulargo.io/frontend/build');
 console.log('🔍 静态文件路径:', staticPath);
