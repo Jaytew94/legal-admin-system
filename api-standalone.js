@@ -177,19 +177,30 @@ app.delete('/api/records/:id', (req, res) => {
   }
 });
 
+// 提供静态验证页面（check目录）
+const checkPath = path.join(__dirname, 'check');
+console.log('🔍 check目录路径:', checkPath);
+console.log('🔍 sticker.html存在:', require('fs').existsSync(path.join(checkPath, 'sticker.html')));
+app.use('/check', express.static(checkPath));
+
 // 提供前端静态文件（必须在API路由之后）
 const staticPath = path.join(__dirname, 'legal.consulargo.io/frontend/build');
 console.log('🔍 静态文件路径:', staticPath);
 console.log('🔍 index.html存在:', require('fs').existsSync(path.join(staticPath, 'index.html')));
 app.use(express.static(staticPath));
 
-// 处理React Router - 将所有非API请求重定向到index.html
+// 处理React Router - 将所有非API/check请求重定向到index.html
 app.get('*', (req, res) => {
   // 如果是API请求，返回404
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API端点未找到' });
   }
-  
+
+  // 如果是check路径，已经被上面的静态文件中间件处理了
+  if (req.path.startsWith('/check/')) {
+    return res.status(404).json({ error: '静态页面未找到' });
+  }
+
   // 否则返回React应用
   res.sendFile(path.join(__dirname, 'legal.consulargo.io/frontend/build', 'index.html'));
 });
