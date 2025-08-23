@@ -173,6 +173,228 @@ app.post('/api/auth/change-password', (req, res) => {
   }
 });
 
+// 获取所有用户（管理员功能）
+app.get('/api/users', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  try {
+    // 解析token获取用户信息
+    const token = authHeader.split(' ')[1];
+    const decoded = Buffer.from(token, 'base64').toString();
+    const userId = parseInt(decoded.split(':')[0]);
+    
+    const currentUser = users.find(u => u.id === userId);
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: '需要管理员权限' });
+    }
+
+    // 返回用户列表（不包含密码）
+    const userList = users.map(user => ({
+      id: user.id,
+      username: user.username,
+      role: user.role
+    }));
+
+    res.json({
+      users: userList
+    });
+  } catch (error) {
+    res.status(401).json({ error: '无效的token' });
+  }
+});
+
+// 添加新用户（管理员功能）
+app.post('/api/users', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  const { username, password, role = 'user' } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: '用户名和密码不能为空' });
+  }
+
+  if (username.length < 3) {
+    return res.status(400).json({ error: '用户名长度不能少于3位' });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ error: '密码长度不能少于6位' });
+  }
+
+  if (!['admin', 'user'].includes(role)) {
+    return res.status(400).json({ error: '角色只能是admin或user' });
+  }
+
+  try {
+    // 解析token获取用户信息
+    const token = authHeader.split(' ')[1];
+    const decoded = Buffer.from(token, 'base64').toString();
+    const userId = parseInt(decoded.split(':')[0]);
+    
+    const currentUser = users.find(u => u.id === userId);
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: '需要管理员权限' });
+    }
+
+    // 检查用户名是否已存在
+    if (users.find(u => u.username === username)) {
+      return res.status(400).json({ error: '用户名已存在' });
+    }
+
+    // 创建新用户
+    const newUserId = Math.max(...users.map(u => u.id)) + 1;
+    const newUser = {
+      id: newUserId,
+      username: username,
+      password: bcrypt.hashSync(password, 10),
+      role: role
+    };
+
+    users.push(newUser);
+
+    console.log(`✅ 管理员 ${currentUser.username} 创建了新用户: ${username} (${role})`);
+
+    res.json({
+      message: '用户创建成功',
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        role: newUser.role
+      }
+    });
+  } catch (error) {
+    console.error('创建用户失败:', error);
+    res.status(500).json({ error: '创建用户失败' });
+  }
+});
+
+// 修改用户信息（管理员功能）
+app.put('/api/users/:id', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  const { id } = req.params;
+  const { username, role } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: '用户名不能为空' });
+  }
+
+  if (username.length < 3) {
+    return res.status(400).json({ error: '用户名长度不能少于3位' });
+  }
+
+  if (role && !['admin', 'user'].includes(role)) {
+    return res.status(400).json({ error: '角色只能是admin或user' });
+  }
+
+  try {
+    // 解析token获取用户信息
+    const token = authHeader.split(' ')[1];
+    const decoded = Buffer.from(token, 'base64').toString();
+    const userId = parseInt(decoded.split(':')[0]);
+    
+    const currentUser = users.find(u => u.id === userId);
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: '需要管理员权限' });
+    }
+
+    // 查找要修改的用户
+    const userIndex = users.findIndex(u => u.id === parseInt(id));
+    if (userIndex === -1) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+
+    const targetUser = users[userIndex];
+
+    // 检查新用户名是否与其他用户冲突
+    if (username !== targetUser.username && users.find(u => u.username === username)) {
+      return res.status(400).json({ error: '用户名已被其他用户使用' });
+    }
+
+    // 更新用户信息
+    const oldUsername = targetUser.username;
+    users[userIndex].username = username;
+    if (role) {
+      users[userIndex].role = role;
+    }
+
+    console.log(`✅ 管理员 ${currentUser.username} 更新用户: ${oldUsername} → ${username}`);
+
+    res.json({
+      message: '用户信息更新成功',
+      user: {
+        id: users[userIndex].id,
+        username: users[userIndex].username,
+        role: users[userIndex].role
+      }
+    });
+  } catch (error) {
+    console.error('更新用户失败:', error);
+    res.status(500).json({ error: '更新用户失败' });
+  }
+});
+
+// 删除用户（管理员功能）
+app.delete('/api/users/:id', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  const { id } = req.params;
+
+  try {
+    // 解析token获取用户信息
+    const token = authHeader.split(' ')[1];
+    const decoded = Buffer.from(token, 'base64').toString();
+    const userId = parseInt(decoded.split(':')[0]);
+    
+    const currentUser = users.find(u => u.id === userId);
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: '需要管理员权限' });
+    }
+
+    // 查找要删除的用户
+    const userIndex = users.findIndex(u => u.id === parseInt(id));
+    if (userIndex === -1) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+
+    const targetUser = users[userIndex];
+
+    // 不能删除自己
+    if (targetUser.id === currentUser.id) {
+      return res.status(400).json({ error: '不能删除自己的账户' });
+    }
+
+    // 删除用户
+    const deletedUser = users.splice(userIndex, 1)[0];
+
+    console.log(`✅ 管理员 ${currentUser.username} 删除用户: ${deletedUser.username}`);
+
+    res.json({
+      message: '用户删除成功',
+      deletedUser: {
+        id: deletedUser.id,
+        username: deletedUser.username,
+        role: deletedUser.role
+      }
+    });
+  } catch (error) {
+    console.error('删除用户失败:', error);
+    res.status(500).json({ error: '删除用户失败' });
+  }
+});
+
 // 获取记录列表
 app.get('/api/records', (req, res) => {
   res.json({

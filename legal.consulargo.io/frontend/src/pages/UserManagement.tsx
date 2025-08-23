@@ -17,16 +17,9 @@ import {
   DeleteOutlined 
 } from '@ant-design/icons';
 import MainLayout from '../components/Layout/MainLayout';
+import { userService, User, CreateUserData, UpdateUserData } from '../services/userService';
 
 const { Option } = Select;
-
-interface User {
-  id: number;
-  username: string;
-  email?: string;
-  role: string;
-  created_at: string;
-}
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -42,9 +35,8 @@ const UserManagement: React.FC = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      // 这里应该调用用户服务API
-      // const response = await userService.getUsers();
-      // setUsers(response.users);
+      const response = await userService.getUsers();
+      setUsers(response.users);
     } catch (error) {
       message.error('加载用户失败');
     } finally {
@@ -66,7 +58,7 @@ const UserManagement: React.FC = () => {
 
   const handleDeleteUser = async (id: number) => {
     try {
-      // await userService.deleteUser(id);
+      await userService.deleteUser(id);
       message.success('删除用户成功');
       loadUsers();
     } catch (error) {
@@ -74,19 +66,20 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: CreateUserData | UpdateUserData) => {
     try {
       if (editingUser) {
-        // await userService.updateUser(editingUser.id, values);
+        await userService.updateUser(editingUser.id, values as UpdateUserData);
         message.success('更新用户成功');
       } else {
-        // await userService.createUser(values);
+        await userService.createUser(values as CreateUserData);
         message.success('创建用户成功');
       }
       setModalVisible(false);
       loadUsers();
-    } catch (error) {
-      message.error('操作失败');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || '操作失败';
+      message.error(errorMessage);
     }
   };
 
@@ -97,9 +90,10 @@ const UserManagement: React.FC = () => {
       key: 'username',
     },
     {
-      title: '邮箱',
-      dataIndex: 'email',
-      key: 'email',
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 80,
     },
     {
       title: '角色',
@@ -114,12 +108,7 @@ const UserManagement: React.FC = () => {
         </span>
       ),
     },
-    {
-      title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
-      render: (date: string) => new Date(date).toLocaleString('zh-CN'),
-    },
+
     {
       title: '操作',
       key: 'action',
@@ -196,15 +185,7 @@ const UserManagement: React.FC = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item
-              name="email"
-              label="邮箱"
-              rules={[
-                { type: 'email', message: '请输入有效的邮箱地址' }
-              ]}
-            >
-              <Input />
-            </Form.Item>
+
 
             {!editingUser && (
               <Form.Item
