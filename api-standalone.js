@@ -7,15 +7,23 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 生成20位随机二维码（包含大小写字母和数字）
-function generateRandomQRCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 20; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
+        // 生成20位随机二维码ID（包含大小写字母和数字）
+        function generateRandomQRCodeId() {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+          let result = '';
+          for (let i = 0; i < 20; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          return result;
+        }
+
+        // 生成完整的二维码URL内容
+        function generateQRCodeContent(qrCodeId) {
+          const baseUrl = process.env.NODE_ENV === 'production' 
+            ? 'https://legal-admin-system-production.up.railway.app'
+            : 'http://localhost:3000';
+          return `${baseUrl}/check/sticker?qr=${qrCodeId}`;
+        }
 
 // 中间件
 app.use(cors());
@@ -35,7 +43,8 @@ const users = [
 let records = [
   {
     id: 1,
-    qr_code: 'A1B2C3D4E5F6G7H8I9J0',
+    qr_code: 'A1B2C3D4E5F6G7H8I9J0', // 20位二维码ID
+    qr_code_content: 'https://legal-admin-system-production.up.railway.app/check/sticker?qr=A1B2C3D4E5F6G7H8I9J0', // 完整URL内容
     legalization_no: '1',
     issue_date: '2025-08-23',
     place_of_issue: 'SKA',
@@ -96,26 +105,59 @@ app.get('/api/records', (req, res) => {
 });
 
 // 创建记录
-app.post('/api/records', (req, res) => {
-  const record = {
-    id: recordId++,
-    qr_code: generateRandomQRCode(),
-    ...req.body,
-    status: 'active',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
-  
-  records.push(record);
-  
-  res.json({
-    message: '记录创建成功',
-    record: {
-      id: record.id,
-      qr_code: record.qr_code,
-      qr_filename: `${record.qr_code}.png`
+app.post('/api/records', async (req, res) => {
+  try {
+    const qrCodeId = generateRandomQRCodeId(); // 生成20位二维码ID
+    const qrCodeContent = generateQRCodeContent(qrCodeId); // 生成完整URL内容
+    
+    const record = {
+      id: recordId++,
+      qr_code: qrCodeId, // 存储二维码ID
+      qr_code_content: qrCodeContent, // 存储完整URL内容
+      ...req.body,
+      status: 'active',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    records.push(record);
+    
+    // 生成二维码图片文件
+    const QRCode = require('qrcode');
+    const fs = require('fs');
+    const qrcodesDir = path.join(__dirname, 'legal.consulargo.io/backend/uploads/qrcodes');
+    
+    // 确保目录存在
+    if (!fs.existsSync(qrcodesDir)) {
+      fs.mkdirSync(qrcodesDir, { recursive: true });
     }
-  });
+    
+    const qrImagePath = path.join(qrcodesDir, `${qrCodeId}.png`);
+    await QRCode.toFile(qrImagePath, qrCodeContent, {
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      },
+      width: 300,
+      margin: 2,
+      errorCorrectionLevel: 'M'
+    });
+    
+    console.log(`✅ 二维码图片已生成: ${qrCodeId}.png`);
+    
+    res.json({
+      message: '记录创建成功',
+      record: {
+        id: record.id,
+        qr_code: record.qr_code,
+        qr_code_content: record.qr_code_content,
+        qr_filename: `${record.qr_code}.png`
+      }
+    });
+  } catch (error) {
+    console.error('创建记录失败:', error);
+    res.status(500).json({ error: '创建记录失败' });
+  }
 });
 
 // 根据二维码获取信息
