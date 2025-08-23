@@ -50,6 +50,18 @@ const RecordsList: React.FC = () => {
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
   const navigate = useNavigate();
 
+  const loadStats = useCallback(async (recordsData: any[]) => {
+    try {
+      // 这里可以调用API获取统计数据，暂时使用模拟数据
+      const total = recordsData.length;
+      const active = recordsData.filter(r => r.status === 'active').length;
+      const inactive = recordsData.filter(r => r.status === 'inactive').length;
+      setStats({ total, active, inactive });
+    } catch (error) {
+      console.error('加载统计数据失败:', error);
+    }
+  }, []);
+
   const loadRecords = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,29 +77,19 @@ const RecordsList: React.FC = () => {
         ...prev,
         total: response.pagination.total,
       }));
+      
+      // 更新统计数据
+      loadStats(response.records);
     } catch (error) {
       message.error('加载记录失败');
     } finally {
       setLoading(false);
     }
-  }, [pagination.current, pagination.pageSize, searchText, statusFilter]);
-
-  const loadStats = useCallback(async () => {
-    try {
-      // 这里可以调用API获取统计数据，暂时使用模拟数据
-      const total = records.length;
-      const active = records.filter(r => r.status === 'active').length;
-      const inactive = records.filter(r => r.status === 'inactive').length;
-      setStats({ total, active, inactive });
-    } catch (error) {
-      console.error('加载统计数据失败:', error);
-    }
-  }, [records]);
+  }, [pagination.current, pagination.pageSize, searchText, statusFilter, loadStats]);
 
   useEffect(() => {
     loadRecords();
-    loadStats();
-  }, [loadRecords, loadStats]);
+  }, [loadRecords]);
 
   const handleDelete = async (id: number) => {
     try {
