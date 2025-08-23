@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>QR Code Debug Page</h1>
+    <div id="result">Loading...</div>
+    
+    <script>
+        console.log('🔍 调试页面加载...');
+        
+        // 获取URL参数
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // 测试API调用
+        async function testAPI() {
+            const qrCode = getQueryParam('qr') || 'cL6kz6CJYKyvFRPkd7GN';
+            console.log('🔍 测试二维码:', qrCode);
+            
+            try {
+                console.log('🔍 开始fetch请求...');
+                const response = await fetch(`/api/qrcode/info/${qrCode}`);
+                console.log('🔍 fetch响应状态:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('🔍 API数据:', data);
+                    document.getElementById('result').innerHTML = 
+                        `<h2 class="success">API成功!</h2><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    console.error('🔍 API错误:', response.status);
+                    document.getElementById('result').innerHTML = 
+                        `<h2 class="error">API错误: ${response.status}</h2>`;
+                }
+            } catch (error) {
+                console.error('🔍 Fetch错误:', error);
+                document.getElementById('result').innerHTML = 
+                    `<h2 class="error">Fetch错误: ${error.message}</h2>`;
+            }
+        }
+        
+        // 测试图片访问
+        async function testImage() {
+            const qrCode = getQueryParam('qr') || 'cL6kz6CJYKyvFRPkd7GN';
+            console.log('🔍 测试图片访问:', qrCode);
+            
+            try {
+                const imgUrl = `/uploads/qrcodes/${qrCode}.png`;
+                console.log('🔍 图片URL:', imgUrl);
+                
+                const response = await fetch(imgUrl);
+                console.log('🔍 图片响应状态:', response.status);
+                
+                if (response.ok) {
+                    console.log('🔍 图片访问成功');
+                    document.getElementById('result').innerHTML += 
+                        `<h3 class="success">图片访问成功!</h3>`;
+                } else {
+                    console.error('🔍 图片访问失败:', response.status);
+                    document.getElementById('result').innerHTML += 
+                        `<h3 class="error">图片访问失败: ${response.status}</h3>`;
+                }
+            } catch (error) {
+                console.error('🔍 图片访问错误:', error);
+                document.getElementById('result').innerHTML += 
+                    `<h3 class="error">图片访问错误: ${error.message}</h3>`;
+            }
+        }
+        
+        // 页面加载完成后执行
+        window.addEventListener('load', async () => {
+            console.log('🔍 页面加载完成');
+            await testAPI();
+            await testImage();
+        });
+    </script>
+</body>
+</html>
