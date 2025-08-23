@@ -22,8 +22,23 @@ const users = [
 ];
 
 // 模拟记录数据
-let records = [];
-let recordId = 1;
+let records = [
+  {
+    id: 1,
+    qr_code: 'kktftufnoxm',
+    legalization_no: '1',
+    issue_date: '2025-08-23',
+    place_of_issue: 'SKA',
+    legalization_type: 'SEEN AT THE MINISTRY OF FOREIGN AFFAIRS',
+    authorized_officer: '1',
+    document_owner: '1',
+    document_type: '1',
+    status: 'active',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+];
+let recordId = 2;
 
 // 健康检查
 app.get('/api/health', (req, res) => {
