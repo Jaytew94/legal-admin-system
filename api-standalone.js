@@ -122,28 +122,36 @@ app.post('/api/records', async (req, res) => {
     
     records.push(record);
     
-    // 生成二维码图片文件
-    const QRCode = require('qrcode');
-    const fs = require('fs');
-    const qrcodesDir = path.join(__dirname, 'legal.consulargo.io/backend/uploads/qrcodes');
-    
-    // 确保目录存在
-    if (!fs.existsSync(qrcodesDir)) {
-      fs.mkdirSync(qrcodesDir, { recursive: true });
+    // 生成二维码图片文件（仅在开发环境）
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        const QRCode = require('qrcode');
+        const fs = require('fs');
+        const qrcodesDir = path.join(__dirname, 'legal.consulargo.io/backend/uploads/qrcodes');
+        
+        // 确保目录存在
+        if (!fs.existsSync(qrcodesDir)) {
+          fs.mkdirSync(qrcodesDir, { recursive: true });
+        }
+        
+        const qrImagePath = path.join(qrcodesDir, `${qrCodeId}.png`);
+        await QRCode.toFile(qrImagePath, qrCodeContent, {
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          },
+          width: 300,
+          margin: 2,
+          errorCorrectionLevel: 'M'
+        });
+        
+        console.log(`✅ 二维码图片已生成: ${qrCodeId}.png`);
+      } catch (qrError) {
+        console.warn('⚠️ 二维码图片生成失败（跳过）:', qrError.message);
+      }
+    } else {
+      console.log(`ℹ️ 生产环境跳过二维码图片生成: ${qrCodeId}.png`);
     }
-    
-    const qrImagePath = path.join(qrcodesDir, `${qrCodeId}.png`);
-    await QRCode.toFile(qrImagePath, qrCodeContent, {
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      },
-      width: 300,
-      margin: 2,
-      errorCorrectionLevel: 'M'
-    });
-    
-    console.log(`✅ 二维码图片已生成: ${qrCodeId}.png`);
     
     res.json({
       message: '记录创建成功',
@@ -156,7 +164,13 @@ app.post('/api/records', async (req, res) => {
     });
   } catch (error) {
     console.error('创建记录失败:', error);
-    res.status(500).json({ error: '创建记录失败' });
+    console.error('错误详情:', error.message);
+    console.error('错误堆栈:', error.stack);
+    res.status(500).json({ 
+      error: '创建记录失败', 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -175,7 +189,7 @@ app.get('/api/qrcode/info/:qrCode', (req, res) => {
 });
 
 // 下载二维码图片
-app.get('/api/qrcode/download/:qrCode', (req, res) => {
+app.get('/api/qrcode/download/:qrCode', async (req, res) => {
   const { qrCode } = req.params;
   const record = records.find(r => r.qr_code === qrCode && r.status === 'active');
   
@@ -185,17 +199,42 @@ app.get('/api/qrcode/download/:qrCode', (req, res) => {
   
   const qrImagePath = path.join(__dirname, 'legal.consulargo.io/backend/uploads/qrcodes', `${qrCode}.png`);
   
-  // 检查文件是否存在
-  if (!require('fs').existsSync(qrImagePath)) {
-    return res.status(404).json({ error: '二维码图片文件不存在' });
+  // 如果文件存在，直接发送
+  if (require('fs').existsSync(qrImagePath)) {
+    res.setHeader('Content-Disposition', `attachment; filename="${qrCode}.png"`);
+    res.setHeader('Content-Type', 'image/png');
+    return res.sendFile(qrImagePath);
   }
   
-  // 设置下载头
-  res.setHeader('Content-Disposition', `attachment; filename="${qrCode}.png"`);
-  res.setHeader('Content-Type', 'image/png');
-  
-  // 发送文件
-  res.sendFile(qrImagePath);
+  // 如果文件不存在，动态生成二维码
+  try {
+    const QRCode = require('qrcode');
+    const qrCodeContent = record.qr_code_content || generateQRCodeContent(qrCode);
+    
+    // 生成二维码buffer
+    const qrBuffer = await QRCode.toBuffer(qrCodeContent, {
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      },
+      width: 300,
+      margin: 2,
+      errorCorrectionLevel: 'M'
+    });
+    
+    // 设置下载头
+    res.setHeader('Content-Disposition', `attachment; filename="${qrCode}.png"`);
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Length', qrBuffer.length);
+    
+    // 发送buffer
+    res.send(qrBuffer);
+    
+    console.log(`✅ 动态生成二维码: ${qrCode}.png`);
+  } catch (error) {
+    console.error('动态生成二维码失败:', error);
+    res.status(500).json({ error: '二维码生成失败' });
+  }
 });
 
 // 更新记录
