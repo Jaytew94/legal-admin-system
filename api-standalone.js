@@ -122,6 +122,30 @@ app.get('/api/qrcode/info/:qrCode', (req, res) => {
   });
 });
 
+// 下载二维码图片
+app.get('/api/qrcode/download/:qrCode', (req, res) => {
+  const { qrCode } = req.params;
+  const record = records.find(r => r.qr_code === qrCode && r.status === 'active');
+  
+  if (!record) {
+    return res.status(404).json({ error: '记录未找到或已失效' });
+  }
+  
+  const qrImagePath = path.join(__dirname, 'legal.consulargo.io/backend/uploads/qrcodes', `${qrCode}.png`);
+  
+  // 检查文件是否存在
+  if (!require('fs').existsSync(qrImagePath)) {
+    return res.status(404).json({ error: '二维码图片文件不存在' });
+  }
+  
+  // 设置下载头
+  res.setHeader('Content-Disposition', `attachment; filename="${qrCode}.png"`);
+  res.setHeader('Content-Type', 'image/png');
+  
+  // 发送文件
+  res.sendFile(qrImagePath);
+});
+
 // 更新记录
 app.put('/api/records/:id', (req, res) => {
   const authHeader = req.headers.authorization;
