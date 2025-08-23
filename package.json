@@ -1,6 +1,6 @@
 {
   "name": "legal-admin-system-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "领事认证管理系统API",
   "main": "api-standalone.js",
   "scripts": {
@@ -16,5 +16,10 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "railway": {
+    "build": {
+      "command": "npm install --force"
+    }
   }
 }

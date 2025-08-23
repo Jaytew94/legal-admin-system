@@ -7,6 +7,9 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 强制清除缓存标记 - v1.0.1
+console.log('🚀 Railway缓存清除版本 v1.0.1 启动中...');
+
         // 生成20位随机二维码ID（包含大小写字母和数字）
         function generateRandomQRCodeId() {
           const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
