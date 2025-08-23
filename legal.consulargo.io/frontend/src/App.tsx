@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import RecordsList from './pages/RecordsList';
 import Settings from './pages/Settings';
 import AddRecord from './pages/AddRecord';
+import EditRecord from './pages/EditRecord';
+import UserManagement from './pages/UserManagement';
 import VerificationPage from './pages/VerificationPage';
 import MainLayout from './components/Layout/MainLayout';
 import './App.css';
@@ -55,6 +57,26 @@ function App() {
                 <ProtectedRoute>
                   <MainLayout>
                     <AddRecord />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/records/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <EditRecord />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <UserManagement />
                   </MainLayout>
                 </ProtectedRoute>
               }

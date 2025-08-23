@@ -29,7 +29,7 @@ const Sidebar: React.FC = () => {
       label: '记录管理',
     },
     {
-      key: '/records/add',
+      key: '/records/new',
       icon: <PlusOutlined />,
       label: '添加记录',
     },

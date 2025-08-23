@@ -300,7 +300,7 @@ const RecordsList: React.FC = () => {
                 type="primary"
                 size="large"
                 icon={<PlusOutlined />}
-                onClick={() => navigate('/records/add')}
+                onClick={() => navigate('/records/new')}
                 style={{ 
                   borderRadius: '8px',
                   boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)'

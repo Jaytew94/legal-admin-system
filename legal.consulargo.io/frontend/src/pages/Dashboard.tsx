@@ -150,7 +150,7 @@ const Dashboard: React.FC = () => {
               <Space>
                 <Button 
                   type="primary" 
-                  onClick={() => navigate('/records/add')}
+                  onClick={() => navigate('/records/new')}
                 >
                   添加新记录
                 </Button>
