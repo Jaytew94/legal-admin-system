@@ -122,36 +122,8 @@ app.post('/api/records', async (req, res) => {
     
     records.push(record);
     
-    // 生成二维码图片文件（仅在开发环境）
-    if (process.env.NODE_ENV !== 'production') {
-      try {
-        const QRCode = require('qrcode');
-        const fs = require('fs');
-        const qrcodesDir = path.join(__dirname, 'legal.consulargo.io/backend/uploads/qrcodes');
-        
-        // 确保目录存在
-        if (!fs.existsSync(qrcodesDir)) {
-          fs.mkdirSync(qrcodesDir, { recursive: true });
-        }
-        
-        const qrImagePath = path.join(qrcodesDir, `${qrCodeId}.png`);
-        await QRCode.toFile(qrImagePath, qrCodeContent, {
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          },
-          width: 300,
-          margin: 2,
-          errorCorrectionLevel: 'M'
-        });
-        
-        console.log(`✅ 二维码图片已生成: ${qrCodeId}.png`);
-      } catch (qrError) {
-        console.warn('⚠️ 二维码图片生成失败（跳过）:', qrError.message);
-      }
-    } else {
-      console.log(`ℹ️ 生产环境跳过二维码图片生成: ${qrCodeId}.png`);
-    }
+    // 生产环境跳过文件生成，使用动态生成
+    console.log(`ℹ️ 记录创建成功，二维码内容: ${qrCodeContent}`);
     
     res.json({
       message: '记录创建成功',
@@ -164,12 +136,25 @@ app.post('/api/records', async (req, res) => {
     });
   } catch (error) {
     console.error('创建记录失败:', error);
-    console.error('错误详情:', error.message);
-    console.error('错误堆栈:', error.stack);
+    
+    // 如果记录已经添加但出现其他错误，仍然返回成功
+    if (records.find(r => r.id === recordId - 1)) {
+      console.log('⚠️ 记录已创建，忽略后续错误');
+      const lastRecord = records[records.length - 1];
+      return res.json({
+        message: '记录创建成功',
+        record: {
+          id: lastRecord.id,
+          qr_code: lastRecord.qr_code,
+          qr_code_content: lastRecord.qr_code_content,
+          qr_filename: `${lastRecord.qr_code}.png`
+        }
+      });
+    }
+    
     res.status(500).json({ 
       error: '创建记录失败', 
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      details: error.message
     });
   }
 });
@@ -206,10 +191,12 @@ app.get('/api/qrcode/download/:qrCode', async (req, res) => {
     return res.sendFile(qrImagePath);
   }
   
-  // 如果文件不存在，动态生成二维码
+  // 动态生成二维码
   try {
     const QRCode = require('qrcode');
     const qrCodeContent = record.qr_code_content || generateQRCodeContent(qrCode);
+    
+    console.log(`🔄 动态生成二维码: ${qrCode}, 内容: ${qrCodeContent}`);
     
     // 生成二维码buffer
     const qrBuffer = await QRCode.toBuffer(qrCodeContent, {
@@ -230,10 +217,10 @@ app.get('/api/qrcode/download/:qrCode', async (req, res) => {
     // 发送buffer
     res.send(qrBuffer);
     
-    console.log(`✅ 动态生成二维码: ${qrCode}.png`);
+    console.log(`✅ 动态生成二维码成功: ${qrCode}.png, 大小: ${qrBuffer.length} bytes`);
   } catch (error) {
     console.error('动态生成二维码失败:', error);
-    res.status(500).json({ error: '二维码生成失败' });
+    res.status(500).json({ error: '二维码生成失败', details: error.message });
   }
 });
 
