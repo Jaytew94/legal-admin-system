@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { config } from '../config';
 
 interface User {
   id: number;
@@ -45,7 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const validateToken = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/me', {
+      const response = await fetch(config.apiUrl + '/auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -67,7 +68,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      console.log('🚀 使用API地址:', config.apiUrl + '/auth/login');
+      const response = await fetch(config.apiUrl + '/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

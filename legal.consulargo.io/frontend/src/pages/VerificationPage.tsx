@@ -28,7 +28,7 @@ const VerificationPage: React.FC = () => {
 
   const fetchRecord = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/public/sticker?qr=${qrCode}`);
+      const response = await fetch(`${window.location.origin}/api/qrcode/info/${qrCode}`);
       
       if (response.ok) {
         const data = await response.json();
