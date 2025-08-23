@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Test</title>
+</head>
+<body>
+    <h1>QR Code Test Page</h1>
+    <div id="result">Loading...</div>
+    
+    <script>
+        console.log('🔍 测试页面加载...');
+        
+        // 获取URL参数
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // 测试API调用
+        async function testAPI() {
+            const qrCode = getQueryParam('qr') || 'kktftufnoxm';
+            console.log('🔍 测试二维码:', qrCode);
+            
+            try {
+                console.log('🔍 开始fetch请求...');
+                const response = await fetch(`/api/qrcode/info/${qrCode}`);
+                console.log('🔍 fetch响应状态:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('🔍 API数据:', data);
+                    document.getElementById('result').innerHTML = 
+                        `<h2>成功!</h2><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    console.error('🔍 API错误:', response.status);
+                    document.getElementById('result').innerHTML = 
+                        `<h2>错误: ${response.status}</h2>`;
+                }
+            } catch (error) {
+                console.error('🔍 Fetch错误:', error);
+                document.getElementById('result').innerHTML = 
+                    `<h2>Fetch错误: ${error.message}</h2>`;
+            }
+        }
+        
+        // 页面加载完成后执行
+        window.addEventListener('load', () => {
+            console.log('🔍 页面加载完成');
+            testAPI();
+        });
+    </script>
+</body>
+</html>
