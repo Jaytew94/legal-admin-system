@@ -37,7 +37,7 @@ const users = [
   {
     id: 1,
     username: 'admin',
-    password: bcrypt.hashSync('admin123', 10),
+    password: bcrypt.hashSync('admin123', 10), // 重置为默认密码
     role: 'admin'
   }
 ];
