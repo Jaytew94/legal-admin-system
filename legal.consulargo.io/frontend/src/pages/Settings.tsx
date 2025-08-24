@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, message, Space } from 'antd';
-import { LockOutlined } from '@ant-design/icons';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
 
 const Settings: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [usernameLoading, setUsernameLoading] = useState(false);
   const [form] = Form.useForm();
-  const { user } = useAuth();
+  const [usernameForm] = Form.useForm();
+  const { user, refreshUser } = useAuth();
 
   const onFinish = async (values: any) => {
     setLoading(true);
@@ -22,11 +24,73 @@ const Settings: React.FC = () => {
     }
   };
 
+  const onUsernameFinish = async (values: any) => {
+    setUsernameLoading(true);
+    try {
+      await authService.changeUsername(values.newUsername);
+      message.success('用户名修改成功！');
+      usernameForm.resetFields();
+      // 刷新用户信息
+      if (refreshUser) {
+        refreshUser();
+      }
+    } catch (error: any) {
+      message.error(error.message || '用户名修改失败');
+    } finally {
+      setUsernameLoading(false);
+    }
+  };
+
   return (
     <div>
       <h1 style={{ marginBottom: '24px' }}>设置</h1>
+      
+      <Card title="修改用户名" style={{ maxWidth: 500, marginBottom: '24px' }}>
+        <Form
+          form={usernameForm}
+          layout="vertical"
+          onFinish={onUsernameFinish}
+        >
+          <Form.Item
+            name="newUsername"
+            label="新用户名"
+            rules={[
+              { required: true, message: '请输入新用户名' },
+              { min: 3, message: '用户名长度至少3位' },
+              {
+                validator: (_, value) => {
+                  if (value && value === user?.username) {
+                    return Promise.reject(new Error('新用户名不能与当前用户名相同'));
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
+          >
+            <Input 
+              prefix={<UserOutlined />}
+              placeholder={`当前用户名: ${user?.username}`}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={usernameLoading}
+              >
+                修改用户名
+              </Button>
+              <Button onClick={() => usernameForm.resetFields()}>
+                重置
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Card>
         
-        <Card title="修改密码" style={{ maxWidth: 500 }}>
+      <Card title="修改密码" style={{ maxWidth: 500 }}>
           <Form
             form={form}
             layout="vertical"

@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -98,10 +99,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const refreshUser = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      await validateToken(token);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     login,
     logout,
+    refreshUser,
     isLoading,
   };
 

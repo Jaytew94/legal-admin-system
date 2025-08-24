@@ -173,6 +173,61 @@ app.post('/api/auth/change-password', (req, res) => {
   }
 });
 
+// 修改当前用户的用户名
+app.post('/api/auth/change-username', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: '未授权访问' });
+  }
+
+  const { newUsername } = req.body;
+
+  if (!newUsername) {
+    return res.status(400).json({ error: '新用户名不能为空' });
+  }
+
+  if (newUsername.length < 3) {
+    return res.status(400).json({ error: '用户名长度不能少于3位' });
+  }
+
+  try {
+    // 解析token获取用户ID
+    const token = authHeader.split(' ')[1];
+    const decoded = Buffer.from(token, 'base64').toString();
+    const userId = parseInt(decoded.split(':')[0]);
+    
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+      return res.status(401).json({ error: '用户不存在' });
+    }
+
+    const user = users[userIndex];
+    const oldUsername = user.username;
+    
+    // 检查新用户名是否已被其他用户使用
+    if (users.find(u => u.username === newUsername && u.id !== userId)) {
+      return res.status(400).json({ error: '用户名已被其他用户使用' });
+    }
+
+    // 更新用户名
+    users[userIndex].username = newUsername;
+    
+    console.log(`✅ 用户 ${oldUsername} 更改用户名为: ${newUsername}`);
+    
+    res.json({
+      message: '用户名修改成功',
+      user: {
+        id: user.id,
+        username: newUsername,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('修改用户名失败:', error);
+    res.status(500).json({ error: '修改用户名失败' });
+  }
+});
+
 // 获取所有用户（管理员功能）
 app.get('/api/users', (req, res) => {
   const authHeader = req.headers.authorization;

@@ -71,6 +71,35 @@ export const authService = {
     }
   },
 
+  async changeUsername(newUsername: string): Promise<{ message: string; user: any }> {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/auth/change-username`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ newUsername }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // 更新本地存储的用户信息
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const updatedUser = { ...currentUser, username: newUsername };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '用户名修改失败');
+      }
+    } catch (error) {
+      console.error('Change username error:', error);
+      throw error;
+    }
+  },
+
   async logout(): Promise<void> {
     // 清除本地存储的token和用户信息
     localStorage.removeItem('token');
