@@ -3,7 +3,7 @@ import { Form, Input, DatePicker, Button, Card, message, Space, Select, Spin } f
 import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { recordService } from '../services/recordService';
-import MainLayout from '../components/Layout/MainLayout';
+
 import dayjs from 'dayjs';
 
 const { Option } = Select;
@@ -60,17 +60,14 @@ const EditRecord: React.FC = () => {
 
   if (initialLoading) {
     return (
-      <MainLayout>
-        <div style={{ textAlign: 'center', padding: '50px' }}>
-          <Spin size="large" />
-        </div>
-      </MainLayout>
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+      </div>
     );
   }
 
   return (
-    <MainLayout>
-      <div>
+    <div>
         <div style={{ marginBottom: 16 }}>
           <Space>
             <Button 
@@ -173,7 +170,6 @@ const EditRecord: React.FC = () => {
           </Form>
         </Card>
       </div>
-    </MainLayout>
   );
 };
 

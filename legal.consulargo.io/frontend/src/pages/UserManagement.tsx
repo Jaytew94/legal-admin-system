@@ -16,7 +16,7 @@ import {
   EditOutlined, 
   DeleteOutlined 
 } from '@ant-design/icons';
-import MainLayout from '../components/Layout/MainLayout';
+
 import { userService, User, CreateUserData, UpdateUserData } from '../services/userService';
 
 const { Option } = Select;
@@ -143,8 +143,7 @@ const UserManagement: React.FC = () => {
   ];
 
   return (
-    <MainLayout>
-      <div>
+    <div>
         <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1>用户管理</h1>
           <Button
@@ -220,8 +219,7 @@ const UserManagement: React.FC = () => {
             </Form.Item>
           </Form>
         </Modal>
-      </div>
-    </MainLayout>
+    </div>
   );
 };
 
